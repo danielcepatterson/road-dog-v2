@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { jwt } from "hono/jwt";
+import { jwt, sign } from "hono/jwt";
 import { v4 as uuidv4 } from "uuid";
 import type { Show, User, AuthPayload, AuthResponse } from "./types";
 
@@ -47,7 +47,7 @@ app.post("/api/auth/signup", async (c) => {
 
   users.set(body.email, user);
 
-  const token = await jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+  const token = await sign({ id: user.id, email: user.email }, JWT_SECRET);
 
   return c.json(
     {
@@ -70,7 +70,7 @@ app.post("/api/auth/login", async (c) => {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
-  const token = await jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+  const token = await sign({ id: user.id, email: user.email }, JWT_SECRET);
 
   return c.json({
     token,
@@ -118,9 +118,9 @@ app.post("/api/shows", async (c) => {
   const body = (await c.req.json()) as Omit<Show, "id" | "createdAt" | "updatedAt">;
 
   const show: Show = {
+    ...body,
     id: uuidv4(),
     bandId: user.bandId,
-    ...body,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
